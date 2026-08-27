@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111d">
+<title>MY WORKOUT</title>
+<style>
+:root{--bg:#07111d;--card:#101d2b;--card2:#152638;--line:#294057;--txt:#f5f8fc;--muted:#91a4b8;--blue:#2f9cff;--green:#45d889}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0d2438,#07111d 45%,#050a10);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:1050px;margin:auto;padding:12px 14px 80px}
+header{position:sticky;top:0;z-index:20;background:#07111def;backdrop-filter:blur(14px);padding:8px 0 12px;border-bottom:1px solid #29405788}.brand{font-size:28px;font-weight:950}.brand span{color:var(--blue)}.sub{color:var(--muted);font-size:12px}
+nav{display:flex;gap:7px;overflow:auto;margin-top:11px}.navbtn,.btn{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:11px;padding:10px 13px;font-weight:700;white-space:nowrap}.navbtn.active,.primary{background:var(--blue);border-color:var(--blue);color:#03101a;font-weight:900}.green{background:var(--green);border-color:var(--green);color:#03160b;font-weight:900}
+.page{display:none;padding-top:16px}.page.active{display:block}.hero,.card{background:rgba(16,29,43,.97);border:1px solid var(--line);border-radius:18px;padding:16px}.hero{background:linear-gradient(135deg,#142a3d,#0d1824);margin-bottom:13px}.hero h1{margin:0 0 5px;font-size:29px}.hero p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.row{display:flex;gap:8px;flex-wrap:wrap}.field{margin:10px 0}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.field input,.search,.meta input{width:100%;padding:10px;border-radius:9px;border:1px solid var(--line);background:#08131f;color:var(--txt)}
+.plan{display:flex;align-items:center;gap:12px;margin-bottom:10px}.thumb{width:92px;height:76px;border-radius:12px;background:linear-gradient(135deg,#16334b,#0a1520);display:grid;place-items:center;font-size:30px}.grow{flex:1}
+.exercise{position:relative}.visual{height:145px;border-radius:13px;background:linear-gradient(135deg,#132b40,#08121c);display:grid;place-items:center;font-size:55px;margin-bottom:10px}.tags{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.tag{background:#17314a;color:#bfe4ff;border-radius:99px;padding:4px 8px;font-size:10px}.meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}.meta label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}.tip{font-size:12px;color:var(--muted);margin-top:9px}.remove{position:absolute;right:9px;top:9px;background:#07111dcc;border:1px solid var(--line);color:#fff;border-radius:8px;padding:5px 8px}
+.cover{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.muscle{background:#09141f;border:1px solid var(--line);border-radius:11px;padding:10px;font-size:11px}.bar{height:6px;background:#050a10;border-radius:99px;margin-top:7px}.fill{height:100%;background:var(--blue);border-radius:99px}.clock{text-align:center;font-size:54px;font-weight:950;margin:8px}.history div{padding:10px 0;border-bottom:1px solid var(--line)}.history span{float:right;color:var(--muted);font-size:11px}
+.modal{display:none;position:fixed;inset:0;z-index:50;background:#000b;align-items:center;justify-content:center;padding:14px}.modal.open{display:flex}.modalbox{width:min(720px,100%);max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.cover{grid-template-columns:1fr 1fr}.plan{align-items:flex-start}}@media(max-width:430px){.cover{grid-template-columns:1fr}.brand{font-size:25px}}
+</style>
+</head>
+<body><div class="app">
+<header><div class="brand">MY <span>WORKOUT</span></div><div class="sub">Dein persönlicher Trainingsplan-Builder</div><nav>
+<button class="navbtn active" data-page="start">Start</button><button class="navbtn" data-page="plans">Pläne</button><button class="navbtn" data-page="training">Training</button><button class="navbtn" data-page="exercises">Übungen</button><button class="navbtn" data-page="progress">Fortschritt</button>
+</nav></header>
+<section id="start" class="page active"><div class="hero"><h1>Bereit fürs Training? 💪</h1><p>Erstelle eigene Trainingspläne, speichere Gewichte und behalte deinen Fortschritt im Blick.</p></div><div class="grid"><div class="card"><h2>Schnellstart</h2><div class="row"><button class="btn primary" data-go="plans">📋 Pläne</button><button class="btn" data-go="training">▶️ Training</button></div></div><div class="card"><h2>Überblick</h2><div class="row"><div><b id="planCount">0</b><div class="sub">Pläne</div></div><div><b id="exerciseCount">0</b><div class="sub">Übungen</div></div><div><b id="sessionCount">0</b><div class="sub">Einheiten</div></div></div></div></div><div class="card" style="margin-top:13px"><h2>Muskel-Abdeckung</h2><div id="coverStart" class="cover"></div></div></section>
+<section id="plans" class="page"><div class="hero"><h1>Meine Pläne</h1><p>Eigene Pläne erstellen, bearbeiten und starten.</p></div><div class="row"><button class="btn primary" id="newPlanBtn">+ Neuer Plan</button></div><div id="plansList" style="margin-top:13px"></div></section>
+<section id="training" class="page"><div class="hero"><h1 id="trainTitle"></h1><p id="trainInfo"></p></div><div class="card" style="margin-bottom:13px;text-align:center"><div class="sub">PAUSENTIMER</div><div id="clock" class="clock">01:30</div><div class="row" style="justify-content:center"><button class="btn primary" data-timer="90">90 Sek.</button><button class="btn" data-timer="60">60 Sek.</button><button class="btn" id="resetTimerBtn">Reset</button></div></div><div id="trainingGrid" class="grid"></div><button class="btn green" style="margin-top:13px" id="finishBtn">✓ Training abschließen</button></section>
+<section id="exercises" class="page"><div class="hero"><h1>Übungsbibliothek</h1><p id="libraryInfo"></p></div><input id="search" class="search" placeholder="Übung, Muskel oder Gerät suchen…"><div id="exerciseGrid" class="grid" style="margin-top:13px"></div></section>
+<section id="progress" class="page"><div class="hero"><h1>Fortschritt</h1><p>Deine Daten werden lokal auf diesem Gerät gespeichert.</p></div><div class="card"><h2>Trainingshistorie</h2><div id="history" class="history"></div></div></section>
+<div id="modal" class="modal"><div class="modalbox"><div class="row" style="justify-content:space-between"><h2 id="modalTitle"></h2><button class="btn" id="closeModalBtn">Schließen</button></div><div id="modalBody"></div></div></div>
+</div>
+<script>
+const EX=[
+{name:'Schulterdrücken',icon:'🏋️',muscles:['Vordere Schulter','Seitliche Schulter'],eq:'Kurzhantel / Maschine',sets:3,reps:'6–10',tip:'Aufrecht sitzen, kontrolliert drücken und langsam absenken.'},
+{name:'Seitheben',icon:'↗️',muscles:['Seitliche Schulter'],eq:'Kurzhantel / Kabel',sets:3,reps:'10–15',tip:'Kontrolliert bis etwa Schulterhöhe heben.'},
+{name:'Reverse Fly',icon:'🪽',muscles:['Hintere Schulter'],eq:'Kurzhantel / Maschine',sets:3,reps:'12–15',tip:'Arme kontrolliert seitlich nach hinten führen.'},
+{name:'Face Pulls',icon:'🎯',muscles:['Hintere Schulter','Rotatorenmanschette'],eq:'Kabelzug',sets:2,reps:'12–15',tip:'Seil auf Gesichtshöhe ziehen, Ellenbogen hoch halten.'},
+{name:'Klimmzüge – breit',icon:'🧗',muscles:['Latissimus','Oberer Rücken','Bizeps'],eq:'Klimmzugstange',sets:3,reps:'6–12',tip:'Breiter Obergriff, ohne Schwung ziehen.'},
+{name:'Klimmzüge – normal',icon:'🧗',muscles:['Latissimus','Oberer Rücken','Bizeps'],eq:'Klimmzugstange',sets:3,reps:'6–12',tip:'Schulterbreiter Obergriff, Körper stabil halten.'},
+{name:'Klimmzüge – eng',icon:'🧗',muscles:['Latissimus','Bizeps'],eq:'Klimmzugstange',sets:3,reps:'6–12',tip:'Enger Griff, Ellenbogen zum Körper ziehen.'},
+{name:'Chin-Ups – Untergriff',icon:'🧗',muscles:['Bizeps','Latissimus'],eq:'Klimmzugstange',sets:3,reps:'6–12',tip:'Untergriff verwenden, kontrolliert hochziehen.'},
+{name:'Dips',icon:'⬇️',muscles:['Trizeps','Brust','Vordere Schulter'],eq:'Dip-Barren',sets:3,reps:'6–12',tip:'Kontrolliert absenken und kräftig hochdrücken.'},
+{name:'Bankdrücken',icon:'🏋️',muscles:['Brust','Trizeps','Vordere Schulter'],eq:'Langhantel',sets:3,reps:'6–10',tip:'Schulterblätter stabilisieren und kontrolliert drücken.'},
+{name:'Rudern',icon:'🚣',muscles:['Rücken','Bizeps','Hintere Schulter'],eq:'Kabel / Maschine',sets:3,reps:'8–12',tip:'Brust aufrecht, Ellenbogen nach hinten führen.'},
+{name:'Latzug',icon:'⬇️',muscles:['Rücken','Bizeps'],eq:'Kabelzug',sets:3,reps:'8–12',tip:'Zur oberen Brust ziehen.'},
+{name:'Bizeps-Curls',icon:'💪',muscles:['Bizeps'],eq:'Kurzhantel',sets:3,reps:'8–12',tip:'Ohne Schwung curlen.'},
+{name:'Trizepsdrücken',icon:'🔻',muscles:['Trizeps'],eq:'Kabelzug',sets:3,reps:'10–15',tip:'Ellenbogen am Körper halten.'},
+{name:'Kniebeugen',icon:'🦵',muscles:['Beine','Gesäß'],eq:'Langhantel / Körpergewicht',sets:3,reps:'6–12',tip:'Kontrolliert tief gehen und stabil aufrichten.'},
+{name:'Beinpresse',icon:'🦵',muscles:['Beine','Gesäß'],eq:'Maschine',sets:3,reps:'8–12',tip:'Kontrollierte Bewegung.'},
+{name:'Crunches',icon:'🔥',muscles:['Bauch'],eq:'Körpergewicht / Maschine',sets:3,reps:'12–20',tip:'Rumpf kontrolliert einrollen.'},
+{name:'Plank',icon:'🔥',muscles:['Bauch','Rumpf'],eq:'Körpergewicht',sets:3,reps:'30–60 Sek.',tip:'Körper gerade halten und Bauch anspannen.'}
+];
+const MUS=['Vordere Schulter','Seitliche Schulter','Hintere Schulter','Rotatorenmanschette','Brust','Rücken','Latissimus','Bizeps','Trizeps','Beine','Bauch'];
+const KEY='my-workout-stable-v3';
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){data=null}
+if(!data)data={plans:[{id:1,name:'Schulter komplett',days:'2× pro Woche',ex:['Schulterdrücken','Seitheben','Reverse Fly','Face Pulls'],vals:{}}],current:1,history:[]};
+let timerId=null,left=90;
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function cur(){return data.plans.find(p=>p.id===data.current)||data.plans[0]}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));render()}
+function openModal(title,body){$('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modal').classList.add('open')}
+function closeModal(){$('modal').classList.remove('open')}
+function newPlan(){openModal('Neuer Trainingsplan','<div class="field"><label>Name</label><input id="newName" value="Mein Trainingsplan"></div><div class="field"><label>Häufigkeit</label><input id="newDays" value="2× pro Woche"></div><button class="btn primary" id="createPlanBtn">Plan erstellen</button>');$('createPlanBtn').onclick=createPlan}
+function createPlan(){const p={id:Date.now(),name:$('newName').value.trim()||'Mein Plan',days:$('newDays').value.trim()||'Nach Bedarf',ex:[],vals:{}};data.plans.push(p);data.current=p.id;save();closeModal();show('plans')}
+function addExercise(name){const p=cur();if(!p.ex.includes(name))p.ex.push(name);save();show('training')}
+function removeExercise(name){cur().ex=cur().ex.filter(x=>x!==name);save();render()}
+function setVal(name,key,value){const p=cur();p.vals[name]=p.vals[name]||{};p.vals[name][key]=value;save()}
+function exerciseCard(e,training){const v=cur().vals[e.name]||{};return `<article class="card exercise"><button class="remove" data-remove="${escapeHtml(e.name)}">×</button><div class="visual">${e.icon}</div><h3>${escapeHtml(e.name)}</h3><div class="tags">${e.muscles.map(m=>`<span class="tag">${escapeHtml(m)}</span>`).join('')}</div><div class="sub">${escapeHtml(e.eq)}</div><div class="meta"><div><label>Sätze</label><input data-name="${escapeHtml(e.name)}" data-key="sets" type="number" min="1" value="${escapeHtml(v.sets??e.sets)}"></div><div><label>Wdh.</label><input data-name="${escapeHtml(e.name)}" data-key="reps" value="${escapeHtml(v.reps??e.reps)}"></div><div><label>Gewicht kg</label><input data-name="${escapeHtml(e.name)}" data-key="weight" type="number" min="0" step=".5" value="${escapeHtml(v.weight??'')}"></div></div><div class="tip">${escapeHtml(e.tip)}</div>${training?'<button class="btn green setdone" style="width:100%;margin-top:10px">✓ Satz abgeschlossen</button>':`<button class="btn primary addex" data-add="${escapeHtml(e.name)}" style="width:100%;margin-top:10px">+ Zum aktuellen Plan</button>`}</article>`}
+function render(){const p=cur();$('planCount').textContent=data.plans.length;$('exerciseCount').textContent=p.ex.length;$('sessionCount').textContent=data.history.length;$('plansList').innerHTML=data.plans.map(pl=>`<div class="card plan"><div class="thumb">💪</div><div class="grow"><h3>${escapeHtml(pl.name)}</h3><div class="sub">${pl.ex.length} Übungen · ${escapeHtml(pl.days)}</div></div><button class="btn primary startplan" data-id="${pl.id}">▶️</button></div>`).join('');$('trainTitle').textContent=p.name;$('trainInfo').textContent=p.ex.length+' Übungen · '+p.days;$('trainingGrid').innerHTML=p.ex.map(n=>EX.find(e=>e.name===n)).filter(Boolean).map(e=>exerciseCard(e,true)).join('')+'<div class="card"><button class="btn primary" id="addExerciseBtn">+ Übung hinzufügen</button></div>';$('coverStart').innerHTML=MUS.map(m=>{const n=p.ex.filter(x=>EX.find(e=>e.name===x)?.muscles.includes(m)).length;return `<div class="muscle"><b>${escapeHtml(m)}</b><div class="sub">${n?'abgedeckt':'nicht im Plan'}</div><div class="bar"><div class="fill" style="width:${Math.min(100,n*45)}%"></div></div></div>`}).join('');$('history').innerHTML=data.history.slice().reverse().map(h=>`<div><b>${escapeHtml(h.plan)}</b> · ${h.count} Übungen <span>${escapeHtml(h.date)}</span></div>`).join('')||'<div class="sub">Noch keine Einheiten.</div>';renderExercises();bindDynamic()}
+function renderExercises(){const q=($('search').value||'').toLowerCase();const list=EX.filter(e=>(e.name+' '+e.muscles.join(' ')+' '+e.eq).toLowerCase().includes(q));$('libraryInfo').textContent=list.length+' von '+EX.length+' Übungen';$('exerciseGrid').innerHTML=list.map(e=>exerciseCard(e,false)).join('');bindDynamic()}
+function bindDynamic(){document.querySelectorAll('.startplan').forEach(b=>b.onclick=()=>{data.current=Number(b.dataset.id);save();show('training')});document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addExercise(b.dataset.add));document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeExercise(b.dataset.remove));document.querySelectorAll('.setdone').forEach(b=>b.onclick=()=>startTimer(90));document.querySelectorAll('input[data-name]').forEach(i=>i.onchange=()=>setVal(i.dataset.name,i.dataset.key,i.value));const addBtn=$('addExerciseBtn');if(addBtn)addBtn.onclick=()=>show('exercises')}
+function startTimer(sec){clearInterval(timerId);left=sec;clock();timerId=setInterval(()=>{left--;clock();if(left<=0){clearInterval(timerId);alert('Pause vorbei! 💪')}},1000)}
+function resetTimer(){clearInterval(timerId);left=90;clock()}
+function clock(){$('clock').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')}
+function finish(){const p=cur();data.history.push({plan:p.name,count:p.ex.length,date:new Date().toLocaleString('de-DE')});save();render();alert('Training gespeichert 💪')}
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>show(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));$('newPlanBtn').onclick=newPlan;$('closeModalBtn').onclick=closeModal;$('resetTimerBtn').onclick=resetTimer;$('finishBtn').onclick=finish;$('search').oninput=renderExercises;document.querySelectorAll('[data-timer]').forEach(b=>b.onclick=()=>startTimer(Number(b.dataset.timer)));render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=3').catch(()=>{})}
+</script></body></html>
