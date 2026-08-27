@@ -1,4 +1,4 @@
-const CACHE='my-workout-v5';
+const CACHE='my-workout-v6';
 const ASSETS=["./", "./index.html", "./sw.js", "./schulterdruecken.jpg", "./seitheben.jpg", "./reverse-fly.jpg", "./face-pulls.jpg", "./klimmzug-breit.jpg", "./klimmzug-normal.jpg", "./klimmzug-eng.jpg", "./chin-ups.jpg", "./dips.jpg", "./muscle-overview.png"];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
