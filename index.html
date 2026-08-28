@@ -60,11 +60,11 @@ const MUS=['Vordere Schulter','Seitliche Schulter','Hintere Schulter','Rotatoren
 const KEY='my-workout-stable-v3';
 let data;
 try{data=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){data=null}
-if(!data)data={plans:[{id:1,name:'Schulter komplett',days:'2× pro Woche',ex:['Schulterdrücken','Seitheben','Reverse Fly','Face Pulls'],vals:{}}],current:1,history:[]};
+if(!data)data={plans:[],current:null,history:[]};
 let timerId=null,left=90;
 const $=id=>document.getElementById(id);
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function cur(){return data.plans.find(p=>p.id===data.current)||data.plans[0]}
+function cur(){return data.plans.find(p=>p.id===data.current)||data.plans[0]||null}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));render()}
 function openModal(title,body){$('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modal').classList.add('open')}
@@ -74,18 +74,43 @@ function createPlan(){const p={id:Date.now(),name:$('newName').value.trim()||'Me
 function deletePlan(id){
 const plan=data.plans.find(p=>p.id===id);
 if(!plan)return;
-if(data.plans.length===1){alert('Mindestens ein Trainingsplan muss erhalten bleiben.');return}
 if(!confirm('Plan „'+plan.name+'“ wirklich löschen?'))return;
 data.plans=data.plans.filter(p=>p.id!==id);
-if(data.current===id)data.current=data.plans[0].id;
+if(data.current===id)data.current=data.plans[0]?.id??null;
 save();
 render();
 }
-function addExercise(name){const p=cur();if(!p.ex.includes(name))p.ex.push(name);save();show('training')}
-function removeExercise(name){cur().ex=cur().ex.filter(x=>x!==name);save();render()}
-function setVal(name,key,value){const p=cur();p.vals[name]=p.vals[name]||{};p.vals[name][key]=value;save()}
-function exerciseCard(e,training){const v=cur().vals[e.name]||{};const visual=e.img?`<div class="visual"><img src="${escapeHtml(e.img)}" alt="${escapeHtml(e.name)}" loading="lazy"></div>`:`<div class="visual">${e.icon}</div>`;return `<article class="card exercise"><button class="remove" data-remove="${escapeHtml(e.name)}">×</button>${visual}<h3>${escapeHtml(e.name)}</h3><div class="tags">${e.muscles.map(m=>`<span class="tag">${escapeHtml(m)}</span>`).join('')}</div><div class="sub">${escapeHtml(e.eq)}</div><div class="meta"><div><label>Sätze</label><input data-name="${escapeHtml(e.name)}" data-key="sets" type="number" min="1" value="${escapeHtml(v.sets??e.sets)}"></div><div><label>Wdh.</label><input data-name="${escapeHtml(e.name)}" data-key="reps" value="${escapeHtml(v.reps??e.reps)}"></div><div><label>Gewicht kg</label><input data-name="${escapeHtml(e.name)}" data-key="weight" type="number" min="0" step=".5" value="${escapeHtml(v.weight??'')}"></div></div><div class="tip">${escapeHtml(e.tip)}</div>${training?'<button class="btn green setdone" style="width:100%;margin-top:10px">✓ Satz abgeschlossen</button>':`<button class="btn primary addex" data-add="${escapeHtml(e.name)}" style="width:100%;margin-top:10px">+ Zum aktuellen Plan</button>`}</article>`}
-function render(){const p=cur();$('planCount').textContent=data.plans.length;$('exerciseCount').textContent=p.ex.length;$('sessionCount').textContent=data.history.length;$('plansList').innerHTML=data.plans.map(pl=>`<div class="card plan"><div class="thumb">💪</div><div class="grow"><h3>${escapeHtml(pl.name)}</h3><div class="sub">${pl.ex.length} Übungen · ${escapeHtml(pl.days)}</div></div><button class="btn primary startplan" data-id="${pl.id}">▶️</button><button class="btn deleteplan" data-delete-plan="${pl.id}" title="Plan löschen">🗑️</button></div>`).join('');$('trainTitle').textContent=p.name;$('trainInfo').textContent=p.ex.length+' Übungen · '+p.days;$('trainingGrid').innerHTML=p.ex.map(n=>EX.find(e=>e.name===n)).filter(Boolean).map(e=>exerciseCard(e,true)).join('')+'<div class="card"><button class="btn primary" id="addExerciseBtn">+ Übung hinzufügen</button></div>';$('coverStart').innerHTML=MUS.map(m=>{const n=p.ex.filter(x=>EX.find(e=>e.name===x)?.muscles.includes(m)).length;return `<div class="muscle"><b>${escapeHtml(m)}</b><div class="sub">${n?'abgedeckt':'nicht im Plan'}</div><div class="bar"><div class="fill" style="width:${Math.min(100,n*45)}%"></div></div></div>`}).join('');$('history').innerHTML=data.history.slice().reverse().map(h=>`<div><b>${escapeHtml(h.plan)}</b> · ${h.count} Übungen <span>${escapeHtml(h.date)}</span></div>`).join('')||'<div class="sub">Noch keine Einheiten.</div>';renderExercises();bindDynamic()}
+function addExercise(name){const p=cur();if(!p){alert('Erstelle zuerst einen Trainingsplan.');show('plans');return}if(!p.ex.includes(name))p.ex.push(name);save();show('training')}
+function removeExercise(name){const p=cur();if(!p)return;p.ex=p.ex.filter(x=>x!==name);save();render()}
+function setVal(name,key,value){const p=cur();if(!p)return;p.vals[name]=p.vals[name]||{};p.vals[name][key]=value;save()}
+function exerciseCard(e,training){const p=cur();const v=p?.vals?.[e.name]||{};const visual=e.img?`<div class="visual"><img src="${escapeHtml(e.img)}" alt="${escapeHtml(e.name)}" loading="lazy"></div>`:`<div class="visual">${e.icon}</div>`;return `<article class="card exercise"><button class="remove" data-remove="${escapeHtml(e.name)}">×</button>${visual}<h3>${escapeHtml(e.name)}</h3><div class="tags">${e.muscles.map(m=>`<span class="tag">${escapeHtml(m)}</span>`).join('')}</div><div class="sub">${escapeHtml(e.eq)}</div><div class="meta"><div><label>Sätze</label><input data-name="${escapeHtml(e.name)}" data-key="sets" type="number" min="1" value="${escapeHtml(v.sets??e.sets)}"></div><div><label>Wdh.</label><input data-name="${escapeHtml(e.name)}" data-key="reps" value="${escapeHtml(v.reps??e.reps)}"></div><div><label>Gewicht kg</label><input data-name="${escapeHtml(e.name)}" data-key="weight" type="number" min="0" step=".5" value="${escapeHtml(v.weight??'')}"></div></div><div class="tip">${escapeHtml(e.tip)}</div>${training?'<button class="btn green setdone" style="width:100%;margin-top:10px">✓ Satz abgeschlossen</button>':`<button class="btn primary addex" data-add="${escapeHtml(e.name)}" style="width:100%;margin-top:10px">+ Zum aktuellen Plan</button>`}</article>`}
+function render(){
+const p=cur();
+$('planCount').textContent=data.plans.length;
+$('exerciseCount').textContent=p?p.ex.length:0;
+$('sessionCount').textContent=data.history.length;
+
+$('plansList').innerHTML=data.plans.length
+?data.plans.map(pl=>`<div class="card plan"><div class="thumb">💪</div><div class="grow"><h3>${escapeHtml(pl.name)}</h3><div class="sub">${pl.ex.length} Übungen · ${escapeHtml(pl.days)}</div></div><button class="btn primary startplan" data-id="${pl.id}">▶️</button><button class="btn deleteplan" data-delete-plan="${pl.id}" title="Plan löschen">🗑️</button></div>`).join('')
+:'<div class="card"><h3>Noch kein Trainingsplan</h3><div class="sub">Erstelle deinen ersten Plan mit „+ Neuer Plan“.</div></div>';
+
+$('trainTitle').textContent=p?p.name:'Kein Trainingsplan';
+$('trainInfo').textContent=p?(p.ex.length+' Übungen · '+p.days):'Erstelle zuerst einen Trainingsplan.';
+$('trainingGrid').innerHTML=p
+?p.ex.map(n=>EX.find(e=>e.name===n)).filter(Boolean).map(e=>exerciseCard(e,true)).join('')+'<div class="card"><button class="btn primary" id="addExerciseBtn">+ Übung hinzufügen</button></div>'
+:'<div class="card"><h3>Kein Plan ausgewählt</h3><div class="sub">Unter „Pläne“ kannst du einen neuen Trainingsplan erstellen.</div><button class="btn primary" id="goPlansBtn" style="margin-top:10px">+ Trainingsplan erstellen</button></div>';
+
+$('coverStart').innerHTML=MUS.map(m=>{
+const n=p?p.ex.filter(x=>EX.find(e=>e.name===x)?.muscles.includes(m)).length:0;
+return `<div class="muscle"><b>${escapeHtml(m)}</b><div class="sub">${n?'abgedeckt':'nicht im Plan'}</div><div class="bar"><div class="fill" style="width:${Math.min(100,n*45)}%"></div></div></div>`
+}).join('');
+
+$('history').innerHTML=data.history.slice().reverse().map(h=>`<div><b>${escapeHtml(h.plan)}</b> · ${h.count} Übungen <span>${escapeHtml(h.date)}</span></div>`).join('')||'<div class="sub">Noch keine Einheiten.</div>';
+
+renderExercises();
+bindDynamic();
+const gp=$('goPlansBtn');if(gp)gp.onclick=()=>show('plans');
+}
 function renderExercises(){
 const q=($('search').value||'').trim().toLowerCase();
 const groups={
@@ -111,7 +136,7 @@ function bindDynamic(){document.querySelectorAll('.startplan').forEach(b=>b.oncl
 function startTimer(sec){clearInterval(timerId);left=sec;clock();timerId=setInterval(()=>{left--;clock();if(left<=0){clearInterval(timerId);alert('Pause vorbei! 💪')}},1000)}
 function resetTimer(){clearInterval(timerId);left=90;clock()}
 function clock(){$('clock').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')}
-function finish(){const p=cur();data.history.push({plan:p.name,count:p.ex.length,date:new Date().toLocaleString('de-DE')});save();render();alert('Training gespeichert 💪')}
+function finish(){const p=cur();if(!p){alert('Kein Trainingsplan vorhanden.');return}data.history.push({plan:p.name,count:p.ex.length,date:new Date().toLocaleString('de-DE')});save();render();alert('Training gespeichert 💪')}
 document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>show(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));$('newPlanBtn').onclick=newPlan;$('closeModalBtn').onclick=closeModal;$('resetTimerBtn').onclick=resetTimer;$('finishBtn').onclick=finish;$('search').oninput=renderExercises;document.querySelectorAll('[data-timer]').forEach(b=>b.onclick=()=>startTimer(Number(b.dataset.timer)));render();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=6').catch(()=>{})}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=8').catch(()=>{})}
 </script></body></html>
